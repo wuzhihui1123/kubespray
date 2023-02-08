@@ -1,0 +1,11 @@
+- name: "etcd: 初始化数据磁盘"
+  hosts:
+    - etcd
+  roles:
+    - disk-init
+
+- name: "kube-node: 初始化数据磁盘"
+  hosts:
+    - kube_node
+  roles:
+    - disk-init

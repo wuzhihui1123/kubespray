@@ -1,0 +1,37 @@
+---
+- name: "install device-mapper-persistent-data lvm2"
+  yum:
+    name:
+    - device-mapper-persistent-data
+    -  lvm2
+    state: latest
+  when: ansible_distribution in [ 'CentOS','OracleLinux','RedHat' ]
+
+- name: "create data dir"
+  file:
+    path: "/data"
+    state: directory
+  ignore_errors: True
+
+- name: "create pv"
+  shell: |
+    /usr/sbin/pvcreate /dev/sdb
+    /usr/sbin/vgcreate vg_fs1 /dev/sdb
+    /usr/sbin/lvcreate  -l +100%FREE -n lv_fs_1 vg_fs1
+  ignore_errors: True
+
+- name: "format data disks"
+  filesystem:
+    fstype: xfs
+    dev: "/dev/mapper/vg_fs1-lv_fs_1"
+    force: true
+  ignore_errors: True
+
+- name: "mount data disks"
+  mount:
+    path: "/data"
+    src: "/dev/mapper/vg_fs1-lv_fs_1"
+    fstype: xfs
+    opts: "defaults,noatime,_netdev,discard"
+    state: mounted
+  ignore_errors: True
